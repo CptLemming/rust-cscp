@@ -1,13 +1,209 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+:root {
+  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 400;
+
+  color: #0f0f0f;
+  background-color: #f6f6f6;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+.container {
+  margin: 0;
+  padding-top: 10vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: center;
+}
+
+h1 {
+  text-align: center;
+}
+
+input,
+button {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  color: #0f0f0f;
+  background-color: #ffffff;
+  transition: border-color 0.25s;
+  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+}
+
+button {
+  cursor: pointer;
+}
+
+button:hover {
+  border-color: #396cd8;
+}
+
+input,
+button {
+  outline: none;
+}
+
+#greet-input {
+  margin-right: 5px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color: #f6f6f6;
+    background-color: #2f2f2f;
+  }
+
+  a:hover {
+    color: #24c8db;
+  }
+
+  input,
+  button {
+    color: #ffffff;
+    background-color: #0f0f0f98;
+  }
+}
+
+html, body, #root, .app {
+  height: 100%;
+}
+
+html, body {
+  margin: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.faders {
+  display: flex;
+  flex: 1;
+  overflow: auto;
+}
+
+.faders .fader {
+  flex: 1;
+  min-width: 165px;
+}
+
+.fader {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.faders .fader:nth-child(even) {
+  background-color: #e5e5e5;
+}
+
+.fader__faderNumber {
+  align-self: center;
+}
+
+.fader__controls {
+  display: flex;
+  flex-direction: column;
+}
+
+.fader__label {
+  background-color: lightgray;
+  font-size: 80%;
+}
+
+.fader__level {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+}
+
+.fader--main .fader__label {
+  background-color: lightcoral;
+}
+.fader--group .fader__label {
+  background-color: lightblue;
+}
+.fader--aux .fader__label {
+  background-color: lightgreen;
+}
+.fader--track .fader__label {
+  background-color: rgb(145, 0, 230);
+}
+
+.pfl__active {
+  background-color: green;
+}
+.cut__active {
+  background-color: red;
+}
+.generator__active {
+  background-color: #396cd8;
+}
+.generator__active:hover {
+  background-color: #6793f3;
+}
+
+.row {
+  display: flex;
+  flex-direction: row;
+}
+
+.col {
+  display: flex;
+  flex-direction: column;
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+.align-end {
+  align-items: flex-end;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+.slider {
+  height: 100%;
+  width: 16px;
+  background: rgb(122, 122, 122);
+  position: relative;
+}
+
+.slider__handle {
+  height: 40px;
+  width: 32px;
+  position: absolute;
+  background: #c5c5c5;
+  left: -8px;
+  bottom: -18px;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.slider__handle::after {
+  content: "";
+  position: absolute;
+  top: 19px;
+  height: 2px;
+  left: 2px;
+  right: 2px;
+  background-color: black;
 }
