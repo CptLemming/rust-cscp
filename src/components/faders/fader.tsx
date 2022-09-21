@@ -1,19 +1,25 @@
+import { PointerEvent, TouchEvent, useEffect, useRef, useState } from 'react';
 import { invoke } from '@tauri-apps/api';
-import { PointerEvent, useEffect, useRef, useState } from 'react';
+import { listen } from '@tauri-apps/api/event';
+
 import { AudioType, Fader } from "../../types";
 
 interface Props {
-  fader: Fader,
+  defaultFader: Fader,
 }
 
 const RenderFader = (props: Props) => {
-  let index = props.fader.index;
-  let isCut = props.fader.isCut;
-  let isPfl = props.fader.isPfl;
-
   let maxValue = 1024;
   let sliderRef = useRef<HTMLDivElement>(null);
+  let sliderHandleRef = useRef<HTMLDivElement>(null);
+  let levelRef = useRef(0);
+  let positionRef = useRef(0);
   let [sliderHeight, setSliderHeight] = useState(0);
+  let [fader, setFader] = useState(props.defaultFader);
+
+  let index = fader.index;
+  let isCut = fader.isCut;
+  let isPfl = fader.isPfl;
 
   useEffect(() => {
     requestAnimationFrame(() => {
@@ -24,58 +30,97 @@ const RenderFader = (props: Props) => {
     });
   }, []);
 
+  useEffect(() => {
+    listen('fader::changed', (event: any) => {
+      // console.log("fader::changed", event);
+      if (event.payload.index === index) {
+        setFader(event.payload);
+      }
+    });
+  }, []);
+
   let toggleFaderCut = () => invoke( "setFaderCut", { index, isCut: !isCut });
 
   let toggleFaderPfl = () => invoke("setFaderPfl", { index, isPfl: !isPfl });
 
-  let sliderPointerDown = (event: PointerEvent) => {
-    let level = props.fader.level;
-    let pos = event.clientY;
+  let touchStart = (event: TouchEvent) => {
+    event.preventDefault();
+    levelRef.current = fader.level;
+    positionRef.current = event.touches[0].clientY;
+    if (sliderHandleRef.current != null) sliderHandleRef.current.ontouchmove = touchMove as any;
+  }
 
-    const handlePointerMove = (event: PointerEvent) => {
-      let nextPos = event.clientY;
-      let offset = (pos - nextPos) * Math.round(maxValue / sliderHeight);
+  let touchMove = (event: TouchEvent) => {
+    event.preventDefault();
+    let nextPos = event.touches[0].clientY;
+    let offset = (positionRef.current - nextPos) * Math.round(maxValue / sliderHeight);
 
-      invoke("setFaderLevel", { index, level: level + offset });
-    };
+    invoke("setFaderLevel", { index, level: levelRef.current + offset });
+  };
 
-    const handlePointerUp = (event: PointerEvent) => {
-      document.removeEventListener("pointermove", handlePointerMove as any);
-      document.removeEventListener("pointerup", handlePointerUp as any);
-    };
+  let touchEnd = () => {
+    if (sliderHandleRef.current != null) sliderHandleRef.current.ontouchmove = null;
+  }
 
-    document.addEventListener("pointermove", handlePointerMove as any);
-    document.addEventListener("pointerup", handlePointerUp as any);
+  let pointerDown = (event: PointerEvent) => {
+    levelRef.current = fader.level;
+    positionRef.current = event.clientY;
+    if (sliderHandleRef.current != null) {
+      sliderHandleRef.current.setPointerCapture(event.pointerId);
+      sliderHandleRef.current.onpointermove = pointerMove as any;
+    }
+  };
+
+  let pointerMove = (event: PointerEvent) => {
+    let nextPos = event.clientY;
+    let offset = (positionRef.current - nextPos) * Math.round(maxValue / sliderHeight);
+
+    invoke("setFaderLevel", { index, level: levelRef.current + offset });
+  };
+
+  let pointerUp = (event: PointerEvent) => {
+    if (sliderHandleRef.current != null) {
+      sliderHandleRef.current.onpointermove = null;
+      sliderHandleRef.current.releasePointerCapture(event.pointerId);
+    }
   };
 
   let faderClasses = "fader";
-  if (props.fader.pathType === AudioType.MN) faderClasses += " fader--main";
-  else if (props.fader.pathType === AudioType.GP) faderClasses += " fader--group";
-  else if (props.fader.pathType === AudioType.AUX) faderClasses += " fader--aux";
-  else if (props.fader.pathType === AudioType.TK) faderClasses += " fader--track";
+  if (fader.pathType === AudioType.MN) faderClasses += " fader--main";
+  else if (fader.pathType === AudioType.GP) faderClasses += " fader--group";
+  else if (fader.pathType === AudioType.AUX) faderClasses += " fader--aux";
+  else if (fader.pathType === AudioType.TK) faderClasses += " fader--track";
 
   let pflButtonClasses = "pfl";
-  if (props.fader.isPfl) pflButtonClasses += " pfl__active";
+  if (fader.isPfl) pflButtonClasses += " pfl__active";
 
   let cutButtonClasses = "cut";
-  if (!props.fader.isCut) cutButtonClasses += " cut__active";
-  if (props.fader.pathType === AudioType.MN) cutButtonClasses += " invisible";
+  if (!fader.isCut) cutButtonClasses += " cut__active";
+  if (fader.pathType === AudioType.MN) cutButtonClasses += " invisible";
 
   const handleSize = 40;
   const handleStyle = {
-    bottom: ((sliderHeight / maxValue) * props.fader.level) - (handleSize / 2),
+    bottom: ((sliderHeight / maxValue) * fader.level) - (handleSize / 2),
   };
 
   return (
       <div className={faderClasses}>
-        <p className="fader__faderNumber">{`F${props.fader.index + 1}`}</p>
+        <p className="fader__faderNumber">{`F${fader.index + 1}`}</p>
         <div className="fader__level">
           <div ref={sliderRef} className="slider">
-            <div className="slider__handle" style={handleStyle} onPointerDown={sliderPointerDown} />
+            <div
+              ref={sliderHandleRef}
+              className="slider__handle"
+              style={handleStyle}
+              onPointerDown={pointerDown}
+              onPointerUp={pointerUp}
+              onTouchStart={touchStart}
+              onTouchEnd={touchEnd}
+            />
           </div>
         </div>
-        <p className="fader__label">{props.fader.label}</p>
-        <p className="fader__format">{props.fader.format}</p>
+        <p className="fader__label">{fader.label}</p>
+        <p className="fader__format">{fader.format}</p>
         <div className="fader__controls">
           <button type="button" className={cutButtonClasses} onClick={toggleFaderCut}>{"CUT"}</button>
           <button type="button" className={pflButtonClasses} onClick={toggleFaderPfl}>{"PFL"}</button>

@@ -88,10 +88,10 @@ const StateManager = (props: Props) => {
         generatorSettingsDispatch({ type: GeneratorAction.INSERT, generatorSettings: response });
       });
 
-    listen('fader::changed', (event: any) => {
-      console.log("fader::changed", event);
-      fadersDispatch({ type: FaderAction.INSERT, fader: event.payload });
-    });
+    // listen('fader::changed', (event: any) => {
+    //   // console.log("fader::changed", event);
+    //   fadersDispatch({ type: FaderAction.INSERT, fader: event.payload });
+    // });
 
     listen('generatorSettings::changed', (event: any) => {
       console.log("generatorSettings::changed", event);

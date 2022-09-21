@@ -10,7 +10,7 @@ const RenderFaders = () => {
     <div className="faders">
       {
         state.faders.map(fader => (
-          <RenderFader key={fader.index} fader={fader} />
+          <RenderFader key={fader.index} defaultFader={fader} />
         ))
       }
     </div>
