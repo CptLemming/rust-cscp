@@ -3,7 +3,7 @@
   windows_subsystem = "windows"
 )]
 
-use cscp::{commands::{ClientInputTx, GeneratorInputTx}, models::{Fader, GeneratorSettings}, generator::CSCPGenerator};
+use cscp::{commands::{ClientInputTx, GeneratorInputTx}, models::{Fader, GeneratorSettings, Profile}, generator::CSCPGenerator};
 use tauri::{async_runtime::Mutex, Manager, Window};
 use tokio::sync::mpsc;
 
@@ -44,9 +44,16 @@ fn main() {
           setGeneratorInterval,
       ])
       .setup(|app| {
+          let selected_profile = 1;
+          let profiles = vec![
+              Profile{address: String::from("172.16.255.5"), port: 49556 },
+              Profile{address: String::from("172.16.240.5"), port: 49556 },
+              Profile{address: String::from("10.211.110.14"), port: 49556 },
+          ];
+
           tauri::async_runtime::spawn(async move {
               let _client = CSCPClient::connect(
-                  "172.16.255.5:49556",
+                profiles.get(selected_profile).unwrap().connection(),
                   client_input_rx,
                   fader_event_tx,
               ).await.unwrap();

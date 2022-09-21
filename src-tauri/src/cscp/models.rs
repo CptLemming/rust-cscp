@@ -118,3 +118,15 @@ pub enum GeneratorDirection {
   INCREMENT,
   DECREMENT,
 }
+
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub struct Profile {
+  pub address: String,
+  pub port: u16,
+}
+
+impl Profile {
+  pub fn connection(&self) -> String {
+    format!("{}:{}", self.address, self.port)
+  }
+}
